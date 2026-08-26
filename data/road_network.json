@@ -1,0 +1,26 @@
+{
+  "note": "SIMULATED road network for prototype demo purposes. Coordinates are relative (x, y) for SVG rendering, not real GPS.",
+  "nodes": [
+    {"id": "hospital", "label": "City Hospital", "type": "source", "x": 60,  "y": 340},
+    {"id": "J1", "label": "Junction A - MG Road", "type": "junction", "x": 180, "y": 300},
+    {"id": "J2", "label": "Junction B - Ring Road", "type": "junction", "x": 300, "y": 220},
+    {"id": "J3", "label": "Junction C - Market Chowk", "type": "junction", "x": 420, "y": 260},
+    {"id": "J4", "label": "Junction D - Stadium Circle", "type": "junction", "x": 320, "y": 380},
+    {"id": "J5", "label": "Junction E - Bypass Signal", "type": "junction", "x": 460, "y": 400},
+    {"id": "J6", "label": "Junction F - Old Town Cross", "type": "junction", "x": 200, "y": 440},
+    {"id": "care_center", "label": "Emergency Care Center", "type": "destination", "x": 560, "y": 300}
+  ],
+  "edges": [
+    {"from": "hospital", "to": "J1", "distance_km": 1.2, "base_time_min": 3},
+    {"from": "J1", "to": "J2", "distance_km": 1.8, "base_time_min": 4},
+    {"from": "J2", "to": "J3", "distance_km": 1.5, "base_time_min": 3.5},
+    {"from": "J3", "to": "care_center", "distance_km": 1.6, "base_time_min": 3.5},
+    {"from": "J1", "to": "J4", "distance_km": 2.0, "base_time_min": 5},
+    {"from": "J4", "to": "J5", "distance_km": 1.9, "base_time_min": 4.5},
+    {"from": "J5", "to": "care_center", "distance_km": 1.3, "base_time_min": 3},
+    {"from": "hospital", "to": "J6", "distance_km": 1.6, "base_time_min": 4},
+    {"from": "J6", "to": "J4", "distance_km": 1.7, "base_time_min": 4},
+    {"from": "J2", "to": "J5", "distance_km": 2.1, "base_time_min": 5},
+    {"from": "J4", "to": "J3", "distance_km": 1.4, "base_time_min": 3.5}
+  ]
+}

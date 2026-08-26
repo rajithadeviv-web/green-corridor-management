@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Corridor — Emergency Traffic Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="scanline-overlay"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="34" height="34">
+        <circle cx="20" cy="20" r="18" fill="none" stroke="var(--corridor-green)" stroke-width="2" opacity="0.4"/>
+        <circle cx="20" cy="20" r="12" fill="none" stroke="var(--corridor-green)" stroke-width="2"/>
+        <circle cx="20" cy="20" r="4" fill="var(--corridor-green)"/>
+        <path d="M20 2 L20 8 M20 32 L20 38 M2 20 L8 20 M32 20 L38 20" stroke="var(--corridor-green)" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>AI-Based Green Corridor Management</h1>
+      <p class="brand-sub">Emergency Traffic Command Center &nbsp;·&nbsp; SIH Prototype</p>
+    </div>
+  </div>
+  <div class="topbar-status">
+    <div class="status-chip" id="modelStatusChip">
+      <span class="dot dot-pulse"></span> ML MODEL: CHECKING…
+    </div>
+    <div class="status-chip sim-chip">
+      {{ simulation_label }}
+    </div>
+    <div class="clock" id="liveClock">--:--:--</div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- SUMMARY CARDS -->
+  <section class="summary-row" id="summaryRow">
+    <div class="stat-card">
+      <span class="stat-label">Active Emergency Vehicles</span>
+      <span class="stat-value" id="statActiveVehicles">0</span>
+    </div>
+    <div class="stat-card accent-green">
+      <span class="stat-label">Active Green Corridors</span>
+      <span class="stat-value" id="statActiveCorridors">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Avg. Time Saved</span>
+      <span class="stat-value" id="statTimeSaved">0<small>min</small></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Signals Prioritized</span>
+      <span class="stat-value" id="statSignalsPrioritized">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Current Traffic Level</span>
+      <span class="stat-value" id="statTrafficLevel">—</span>
+    </div>
+    <div class="stat-card accent-amber">
+      <span class="stat-label">Trips Completed</span>
+      <span class="stat-value" id="statCompleted">0</span>
+    </div>
+  </section>
+
+  <div class="main-grid">
+
+    <!-- LEFT COLUMN: Emergency request + AI panel -->
+    <div class="col col-left">
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>01 · New Emergency Request</h2>
+        </div>
+        <div class="panel-body">
+          <form id="emergencyForm" class="form-grid">
+            <label>Vehicle ID
+              <input type="text" id="vehicleId" placeholder="AMB-104" required>
+            </label>
+            <label>Vehicle Type
+              <select id="vehicleType">
+                <option value="ambulance">Ambulance</option>
+                <option value="fire_engine">Fire Engine</option>
+                <option value="police">Police Emergency Vehicle</option>
+                <option value="rescue">Rescue Vehicle</option>
+                <option value="other">Other Authorized Vehicle</option>
+              </select>
+            </label>
+            <label>Source
+              <select id="sourceNode"></select>
+            </label>
+            <label>Destination
+              <select id="destinationNode"></select>
+            </label>
+            <label>Emergency Priority
+              <select id="emergencyLevel">
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="normal">Normal</option>
+              </select>
+            </label>
+            <button type="submit" class="btn btn-primary full-width">Dispatch Emergency Request</button>
+          </form>
+          <button id="demoBtn" class="btn btn-ghost full-width">▶ Run Full Demo Scenario</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>02 · AI Traffic Prediction</h2>
+          <span class="badge" id="aiBadge">IDLE</span>
+        </div>
+        <div class="panel-body" id="aiPanelBody">
+          <p class="muted-note">Submit a request to run a live congestion prediction from the trained RandomForest model.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- CENTER COLUMN: Map + vehicle -->
+    <div class="col col-center">
+      <section class="panel panel-map">
+        <div class="panel-head">
+          <h2>03 · Simulated Road Network</h2>
+          <span class="badge badge-muted">NOT A REAL GEOGRAPHIC MAP</span>
+        </div>
+        <div class="panel-body map-body">
+          <div id="mapContainer"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>04 · Vehicle Movement</h2>
+          <span class="badge" id="vehicleBadge">NO ACTIVE TRIP</span>
+        </div>
+        <div class="panel-body">
+          <div class="vehicle-stats" id="vehicleStats">
+            <div><span>Current Junction</span><strong id="vCurrent">—</strong></div>
+            <div><span>Next Junction</span><strong id="vNext">—</strong></div>
+            <div><span>Distance Remaining</span><strong id="vDistance">—</strong></div>
+            <div><span>ETA</span><strong id="vEta">—</strong></div>
+          </div>
+          <div class="control-row">
+            <button id="advanceBtn" class="btn btn-secondary" disabled>Advance Vehicle →</button>
+            <button id="eventBtn" class="btn btn-warning" disabled>⚠ Simulate Traffic Event</button>
+            <button id="completeBtn" class="btn btn-success" disabled>✓ Complete &amp; Release Corridor</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN: Routes + Signals -->
+    <div class="col col-right">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>05 · Route Options</h2>
+        </div>
+        <div class="panel-body" id="routesPanelBody">
+          <p class="muted-note">Routes will appear here after dispatch.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>06 · Signal Corridor Status</h2>
+        </div>
+        <div class="panel-body" id="signalsPanelBody">
+          <p class="muted-note">No active corridor.</p>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <section class="panel activity-log">
+    <div class="panel-head">
+      <h2>System Activity Log</h2>
+      <button id="clearLogBtn" class="btn btn-ghost btn-sm">Clear</button>
+    </div>
+    <div class="panel-body">
+      <div id="activityLog" class="log-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="eventModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Simulate Traffic Event</h3>
+    <p class="muted-note">Introduce a real disruption. The system will re-run AI prediction and route optimization.</p>
+    <label>Event Type
+      <select id="eventType">
+        <option value="accident">Accident</option>
+        <option value="road_blockage">Road Blockage</option>
+        <option value="sudden_congestion">Sudden Congestion</option>
+        <option value="traffic_increase">Traffic Increase</option>
+        <option value="road_closure">Road Closure</option>
+      </select>
+    </label>
+    <label>Location (junction)
+      <select id="eventLocation"></select>
+    </label>
+    <div class="modal-actions">
+      <button id="eventCancelBtn" class="btn btn-ghost">Cancel</button>
+      <button id="eventConfirmBtn" class="btn btn-warning">Trigger Event</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/emergency.js') }}"></script>
+<script src="{{ url_for('static', filename='js/traffic.js') }}"></script>
+<script src="{{ url_for('static', filename='js/corridor.js') }}"></script>
+</body>
+</html>

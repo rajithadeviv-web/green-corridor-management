@@ -1,0 +1,71 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 200,
+  "trained_on": "synthetic/demo prototype dataset (data/traffic_data.csv)",
+  "train_rows": 4800,
+  "test_rows": 1200,
+  "accuracy": 0.8358,
+  "precision_macro": 0.8148,
+  "recall_macro": 0.8391,
+  "f1_macro": 0.8259,
+  "confusion_matrix": {
+    "labels": [
+      "low",
+      "medium",
+      "high",
+      "severe"
+    ],
+    "matrix": [
+      [
+        247,
+        45,
+        0,
+        0
+      ],
+      [
+        64,
+        512,
+        46,
+        0
+      ],
+      [
+        0,
+        20,
+        196,
+        12
+      ],
+      [
+        0,
+        0,
+        10,
+        48
+      ]
+    ]
+  },
+  "feature_importances": {
+    "vehicle_count": 0.228,
+    "traffic_density": 0.0883,
+    "average_speed": 0.4235,
+    "road_length": 0.0422,
+    "hour": 0.0472,
+    "day_of_week": 0.0312,
+    "weather_encoded": 0.0282,
+    "road_capacity": 0.1113
+  },
+  "feature_order": [
+    "vehicle_count",
+    "traffic_density",
+    "average_speed",
+    "road_length",
+    "hour",
+    "day_of_week",
+    "weather_encoded",
+    "road_capacity"
+  ],
+  "class_order": [
+    "low",
+    "medium",
+    "high",
+    "severe"
+  ]
+}
